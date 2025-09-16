@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -98,7 +99,7 @@ class PatronProfileController {
     }
 
     @PostMapping("/profiles/{patronId}/holds")
-    ResponseEntity placeHold(@PathVariable UUID patronId, @RequestBody PlaceHoldRequest request) {
+    ResponseEntity<Void> placeHold(@PathVariable UUID patronId, @RequestBody PlaceHoldRequest request) {
         Try<Result> result = placingOnHold.placeOnHold(
                 new PlaceOnHoldCommand(
                         Instant.now(),
@@ -109,17 +110,17 @@ class PatronProfileController {
                 )
         );
         return result
-                .map(success -> ResponseEntity.ok().build())
-                .getOrElse(ResponseEntity.status(INTERNAL_SERVER_ERROR).build());
+                .map(success -> ResponseEntity.ok().<Void>build())
+                .getOrElse(ResponseEntity.status(INTERNAL_SERVER_ERROR).<Void>build());
     }
 
     @DeleteMapping("/profiles/{patronId}/holds/{bookId}")
-    ResponseEntity cancelHold(@PathVariable UUID patronId, @PathVariable UUID bookId) {
+    ResponseEntity<Void> cancelHold(@PathVariable UUID patronId, @PathVariable UUID bookId) {
         Try<Result> result = cancelingHold.cancelHold(new CancelHoldCommand(Instant.now(), new PatronId(patronId), new BookId(bookId)));
         return result
-                .map(success -> ResponseEntity.noContent().build())
-                .recover(r -> Match(r).of(Case($(Predicates.instanceOf(IllegalArgumentException.class)), ResponseEntity.notFound().build())))
-                .getOrElse(ResponseEntity.status(INTERNAL_SERVER_ERROR).build());
+                .map(success -> ResponseEntity.noContent().<Void>build())
+                .recover(r -> Match(r).of(Case($(Predicates.instanceOf(IllegalArgumentException.class)), ResponseEntity.notFound().<Void>build())))
+                .getOrElse(ResponseEntity.status(INTERNAL_SERVER_ERROR).<Void>build());
     }
 
     private EntityModel<Hold> resourceWithLinkToHoldSelf(UUID patronId, io.pillopl.library.lending.patronprofile.model.Hold hold) {
@@ -140,7 +141,8 @@ class PatronProfileController {
 }
 
 @Value
-class ProfileResource extends RepresentationModel {
+@EqualsAndHashCode(callSuper = false)
+class ProfileResource extends RepresentationModel<ProfileResource> {
 
     UUID patronId;
 
