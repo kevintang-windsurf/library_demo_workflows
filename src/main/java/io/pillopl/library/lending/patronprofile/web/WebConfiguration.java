@@ -12,6 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.lang.NonNull;
 
 import static org.springframework.hateoas.config.EnableHypermediaSupport.HypermediaType.HAL_FORMS;
 
@@ -35,7 +36,7 @@ public class WebConfiguration {
          * Assume any {@link ObjectMapper} starts with {@literal _hal} and ends with {@literal Mapper}.
          */
         @Override
-        public Object postProcessBeforeInitialization(Object bean, String beanName)
+        public Object postProcessBeforeInitialization(@NonNull Object bean, @NonNull String beanName)
                 throws BeansException {
             if (bean instanceof ObjectMapper && beanName.startsWith("_hal") && beanName.endsWith("Mapper")) {
                 postProcessHalObjectMapper((ObjectMapper) bean);
@@ -53,13 +54,13 @@ public class WebConfiguration {
         }
 
         @Override
-        public Object postProcessAfterInitialization(Object bean, String beanName)
+        public Object postProcessAfterInitialization(@NonNull Object bean, @NonNull String beanName)
                 throws BeansException {
             return bean;
         }
 
         @Override
-        public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        public void setBeanFactory(@NonNull BeanFactory beanFactory) throws BeansException {
             this.beanFactory = beanFactory;
         }
     }

@@ -5,9 +5,10 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.List;
 
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 class CatalogueDatabase {
@@ -33,17 +34,12 @@ class CatalogueDatabase {
     }
 
     Option<Book> findBy(ISBN isbn) {
-        try {
-            return Option.of(
-                    jdbcTemplate.queryForObject(
-                            "SELECT b.* FROM catalogue_book b WHERE b.isbn = ?",
-                            new BeanPropertyRowMapper<>(BookDatabaseRow.class),
-                            isbn.getIsbn())
-                            .toBook());
-        } catch (EmptyResultDataAccessException e) {
-            return Option.none();
-
-        }
+        List<BookDatabaseRow> results = jdbcTemplate.query(
+                "SELECT b.* FROM catalogue_book b WHERE b.isbn = ?",
+                new BeanPropertyRowMapper<>(BookDatabaseRow.class),
+                isbn.getIsbn());
+        
+        return results.isEmpty() ? Option.none() : Option.of(results.get(0).toBook());
     }
 
 }
